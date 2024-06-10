@@ -1,4 +1,4 @@
-from block import Block
+from backend.blockchain.block import Block
 
 # Description: A blockchain implementation in Python
 class Blockchain:
