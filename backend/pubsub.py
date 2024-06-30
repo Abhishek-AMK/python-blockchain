@@ -51,10 +51,9 @@ class PubSub():
         self.pubnub.add_listener(Listner(self.blockchain))  
         
     def publish(self, channel, message):
-        """ 
+        """
         Publish the message object to the channel.
         """
-        
         self.pubnub.unsubscribe().channels([channel]).execute()
         self.pubnub.publish().channel(channel).message(message).sync()
         self.pubnub.subscribe().channels([channel]).execute()
