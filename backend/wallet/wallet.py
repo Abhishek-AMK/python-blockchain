@@ -2,16 +2,20 @@ import json
 import uuid
 
 from backend.config import STARTING_BALANCE
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature, encode_dss_signature
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import (
+    encode_dss_signature,
+    decode_dss_signature
+)
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.exceptions import InvalidSignature
 
-
 class Wallet:
     """
-    An individual wallet that holds a balance and can send and receive transactions.
+    An individual wallet for a miner.
+    Keeps track of the miner's balance.
+    Allows a miner to authorize transactions.
     """
     def __init__(self):
         self.address = str(uuid.uuid4())[0:8]
@@ -19,10 +23,10 @@ class Wallet:
         self.private_key = ec.generate_private_key(
             ec.SECP256K1(),
             default_backend()
-            )
+        )
         self.public_key = self.private_key.public_key()
         self.serialize_public_key()
-        
+
     def sign(self, data):
         """
         Generate a signature based on the data using the local private key.
@@ -31,7 +35,7 @@ class Wallet:
             json.dumps(data).encode('utf-8'),
             ec.ECDSA(hashes.SHA256())
         ))
-        
+
     def serialize_public_key(self):
         """
         Reset the public key to its serialized version.
@@ -40,7 +44,7 @@ class Wallet:
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         ).decode('utf-8')
-    
+
     @staticmethod
     def verify(public_key, data, signature):
         """
@@ -52,31 +56,30 @@ class Wallet:
         )
 
         (r, s) = signature
-        
+
         try:
             deserialized_public_key.verify(
                 encode_dss_signature(r, s),
                 json.dumps(data).encode('utf-8'),
-                ec.ECDSA(hashes.SHA256())
+                ec.ECDSA(hashes.SHA256())    
             )
             return True
         except InvalidSignature:
             return False
-            
-        
+
 def main():
     wallet = Wallet()
-    print(f'wallet1.__dict__: {wallet.__dict__}')
-    
-    data = {'foo': 'bar'}
+    print(f'wallet.__dict__: {wallet.__dict__}')
+
+    data = { 'foo': 'bar' }
     signature = wallet.sign(data)
     print(f'signature: {signature}')
-    
+
     should_be_valid = Wallet.verify(wallet.public_key, data, signature)
     print(f'should_be_valid: {should_be_valid}')
-    
+
     should_be_invalid = Wallet.verify(Wallet().public_key, data, signature)
     print(f'should_be_invalid: {should_be_invalid}')
-    
+
 if __name__ == '__main__':
     main()
