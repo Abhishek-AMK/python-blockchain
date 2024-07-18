@@ -2,6 +2,7 @@ import React, {useState,useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import {FormGroup, FormControl, Button, Form} from 'react-bootstrap';
 import {API_BASE_URL} from '../config';
+import history from '../history';
 
 function ConductTransaction() {
     const [amount, setAmount] = useState(0);
@@ -31,8 +32,9 @@ function ConductTransaction() {
         .then(json => {
             console.log('submitTransaction json', json);
             alert('Success');
-            // setRecipient('');
-            // setAmount(0);
+            
+
+            history.push('/transaction-pool');
         });
     }
 
